@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo -en "\nRun containers\n"
+docker run --name fedora -it -d  fedora
+docker run --name ubuntu -it -d  ubuntu:python
+docker run --name centos -it -d  centos
+
+echo -en "\nRun playbooks\n"
+ansible-playbook -i inventory/prod.yml --vault-password-file ~/.secret site.yml 
+
+echo -en "\nStop containers\n"
+docker stop centos
+docker stop ubuntu
+docker stop fedora
+
+echo -en "\nRemove containers\n"
+docker rm centos ubuntu fedora
+
