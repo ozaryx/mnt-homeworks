@@ -1,0 +1,12 @@
+---
+- name: Check Clickhouse
+  hosts: clickhouse
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+- name: Check vector
+  hosts: vector
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:

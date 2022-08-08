@@ -1,0 +1,30 @@
+vector_version: 0.23.0
+vector_config_dir: "{{ ansible_user_dir }}/vector_config"
+vector_config:
+  data_dir: /var/lib/vector
+  sources:
+    sample_file:
+      type: file
+      read_from: beginning
+      include:
+        - /var/log/sample/*.log
+      ignore_older: 600
+  sinks:
+    to_clickhouse:
+      inputs:
+        - sample_file
+      type: clickhouse
+      auth: null
+      database: logs
+      endpoint: http://172.17.0.2:8123
+      table: logs_table
+      buffer: null
+      acknowledgements: null
+      batch: null
+      compression: gzip
+      encoding: null
+      healthcheck: null
+      request: null
+      tls: null
+      proxy: null
+      skip_unknown_fields: null

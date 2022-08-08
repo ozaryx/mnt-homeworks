@@ -1,0 +1,141 @@
+---
+- name: Fix repos
+  hosts: all
+  tasks:
+    - name: fix mirrorlist repos
+      # ansible.builtin.shell:
+      #   cmd: sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+      ansible.builtin.replace:
+        path: "/etc/yum.repos.d/{{ item }}"
+        regexp: '^(mirrorlist.*)'
+        replace: '#\1'
+      loop:
+        - CentOS-Linux-AppStream.repo
+        - CentOS-Linux-BaseOS.repo
+        - CentOS-Linux-ContinuousRelease.repo
+        - CentOS-Linux-Debuginfo.repo
+        - CentOS-Linux-Devel.repo
+        - CentOS-Linux-Extras.repo
+        - CentOS-Linux-FastTrack.repo
+        - CentOS-Linux-HighAvailability.repo
+        - CentOS-Linux-Media.repo
+        - CentOS-Linux-Plus.repo
+        - CentOS-Linux-PowerTools.repo
+        - CentOS-Linux-Sources.repo
+
+    - name: fix baseurl repos
+      # ansible.builtin.shell:
+      #   cmd: sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+      ansible.builtin.replace:
+        path: "/etc/yum.repos.d/{{ item }}"
+        regexp: '^#baseurl=http://mirror.centos.org'
+        replace: 'baseurl=http://vault.centos.org'
+      loop:
+        - CentOS-Linux-AppStream.repo
+        - CentOS-Linux-BaseOS.repo
+        - CentOS-Linux-ContinuousRelease.repo
+        - CentOS-Linux-Debuginfo.repo
+        - CentOS-Linux-Devel.repo
+        - CentOS-Linux-Extras.repo
+        - CentOS-Linux-FastTrack.repo
+        - CentOS-Linux-HighAvailability.repo
+        - CentOS-Linux-Media.repo
+        - CentOS-Linux-Plus.repo
+        - CentOS-Linux-PowerTools.repo
+        - CentOS-Linux-Sources.repo
+  tags: 
+    - always
+    - fix_repos
+
+- name: Install Clickhouse
+  hosts: clickhouse
+  handlers:
+    - name: Start clickhouse service
+      # become: true
+      ansible.builtin.command:
+        cmd: /etc/init.d/clickhouse-server start
+        creates: /var/run/clickhouse-server/clickhouse-server.pid
+
+  tasks:
+    - name: Get clickhouse distrib
+      block:
+        - name: Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+            mode: 0644
+          with_items: "{{ clickhouse_packages }}"
+      rescue:
+        - name: Get clickhouse common static
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+            mode: 0644
+
+    - name: Install clickhouse packages
+      # become: true
+      ansible.builtin.yum:
+        name:
+          - clickhouse-common-static-{{ clickhouse_version }}.rpm
+          - clickhouse-client-{{ clickhouse_version }}.rpm
+          - clickhouse-server-{{ clickhouse_version }}.rpm
+        disable_gpg_check: 'yes'
+        state: present
+      notify: Start clickhouse service
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc !=82
+      changed_when: create_db.rc == 0
+  tags:
+    - install_clickhouse
+
+- name: Install Vector
+  hosts: vector
+  handlers:
+    - name: Start vector service
+      # become: true
+      ansible.builtin.command:
+        cmd: /usr/bin/vector --config-yaml {{ vector_config }} --watch-config true
+        # creates: /var/run/vector/vector.pid
+
+  tasks:
+    - name: Get vector distrib
+      ansible.builtin.get_url:
+        url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-1.{{ ansible_architecture }}.rpm"
+        dest: "./vector-{{ vector_version }}-1.{{ ansible_architecture }}.rpm"
+        mode: 0644
+
+    - name: Install Vector | YUM install
+      # become: true
+      ansible.builtin.yum:
+        name: vector-{{ vector_version }}-1.{{ ansible_architecture }}.rpm
+        disable_gpg_check: 'yes'
+        state: present
+      notify: Start vector service
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+  tags:
+    - install_vector
+
+- name: Configure vector
+  hosts: vector
+
+  tasks:
+    - name: Configure Vector | ensure what directory exists
+      ansible.builtin.file:
+        path: "{{ vector_config_dir }}"
+        state: directory
+        mode: 0644
+    - name: Configure Vector | Template config
+      ansible.builtin.template:
+        src: vector.yml.j2
+        mode: 0644
+        dest: "{{ vector_config_dir }}/vector.yml"
+  tags:
+    - config_vector
