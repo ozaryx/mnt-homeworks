@@ -40,6 +40,13 @@ Starting galaxy role install process
 10. Выложите playbook в репозиторий.
 11. В ответ приведите ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
 
+# Ответ
+
+- https://github.com/ozaryx/elastic-role
+- https://github.com/ozaryx/kibana-role
+- https://github.com/ozaryx/logstash-role
+- https://github.com/ozaryx/mnt-homeworks/tree/master/08-ansible-03-role/playbook
+
 ## Необязательная часть
 
 1. Проделайте схожие манипуляции для создания роли logstash.
