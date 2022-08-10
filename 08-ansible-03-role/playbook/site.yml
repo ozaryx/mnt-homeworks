@@ -1,0 +1,20 @@
+---
+- name: Install Java
+  hosts: all
+  roles:
+      - java
+
+- name: Install Elasticsearch
+  hosts: elastic
+  roles:
+      - elastic
+
+- name: Install Kibana
+  hosts: kibana
+  roles:
+      - kibana
+
+- name: Install logstash
+  hosts: nginx
+  roles:
+      - logstash

@@ -17,7 +17,12 @@ Role Variables
 Example Playbook
 ----------------
 
-specify rolename to java:
+```yaml
+- hosts: all
+  roles:
+      - mnt-homeworks-ansible
+```
+Or, if you specify rolename to java:
 ```yaml
 - hosts: all
   roles:
@@ -32,4 +37,4 @@ BSD
 Author Information
 ------------------
 
-Konstantin Mankov
+Alexey Metlyakov

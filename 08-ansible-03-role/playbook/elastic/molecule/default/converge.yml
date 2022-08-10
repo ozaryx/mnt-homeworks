@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include elastic roles"
+      include_role:
+        name: "ozaryx.elastic"

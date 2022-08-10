@@ -1,0 +1,4 @@
+---
+# defaults file for logstash
+  logstash_version: "8.3.3"
+  logstash_home: "/opt/logstash/{{ logstash_version }}"
