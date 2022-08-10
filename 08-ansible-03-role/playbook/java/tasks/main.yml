@@ -23,6 +23,7 @@
     state: directory
     path: "{{ java_home }}"
     mode: 0755
+
 - name: Extract java in the installation directory
   become: true
   unarchive:

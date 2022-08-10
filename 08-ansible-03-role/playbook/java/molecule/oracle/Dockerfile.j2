@@ -1,0 +1,14 @@
+# Molecule managed
+
+{% if item.registry is defined %}
+FROM {{ item.registry.url }}/{{ item.image }}
+{% else %}
+FROM {{ item.image }}
+{% endif %}
+
+ENV HTTPS_PROXY=http://172.17.0.1:3128
+ENV https_proxy=http://172.17.0.1:3128
+ENV NO_PROXY=localhost,*.ftc.ru,.cft.ru,127.0.0.0/8
+ENV no_proxy=localhost,*.ftc.ru,.cft.ru,127.0.0.0/8
+ENV HTTP_PROXY=http://172.17.0.1:3128
+ENV http_proxy=http://172.17.0.1:3128
