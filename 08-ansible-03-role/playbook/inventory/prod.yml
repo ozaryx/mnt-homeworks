@@ -1,0 +1,16 @@
+---
+elastic:
+  hosts:
+    elastic-01:
+      ansible_connection: docker
+      # ansible_host: <IP_here>
+
+kibana:
+  hosts:
+    kibana-01:
+      ansible_connection: docker
+
+nginx:
+  hosts:
+    nginx-01:
+      ansible_connection: docker
